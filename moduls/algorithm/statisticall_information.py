@@ -12,8 +12,10 @@ def get_statistically_information_for_segment(segment, month, year):
     """
     statistically_information_table_for_segment = []
     statistically_information_table = sql_select_queries.select_statistically_information_by_month(month)
+
     for row in statistically_information_table:
         if row[4].split(',')[0] == segment.get("Name") and row[3] == year and row[5] == segment.get("Stars"):
+            print('get statistically information')
             statistically_information_table_for_segment.append([row[0], row[1], row[2], row[3], row[4], row[5]])
     return statistically_information_table_for_segment
 
@@ -25,13 +27,12 @@ def get_adr_for_month(statistically_information):
     :return: The adr value from the statistically_information
     """
     if isinstance(statistically_information, list) and len(statistically_information) > 0:
-        if isinstance(statistically_information[0], list):
-            return statistically_information[0][0]
-        return 0
+
+        return statistically_information[0][0] if isinstance(statistically_information[0], list) else 0
     return 0
 
 
-def get_revPar_for_month(statistically_information):
+def get_rev_par_for_month(statistically_information):
     """
     Get the revPar value for the statistical data
     :param statistically_information: The statistical data to get the revPar value for

@@ -8,6 +8,7 @@ def calculate_number_of_nights(check_in, check_out):
     :param check_out: the second date
     :return: the number of nights
     """
+    print('in calculate_number_of_night', check_in, check_out, type(check_in))
     return (check_out - check_in).days
 
 
@@ -34,7 +35,7 @@ def convert_country_name_to_code(country_name):
             return country.alpha_2
 
 
-def build_room(num_adults, num_children, cnn_ages=None):
+def build_room(num_adults, num_children, room_token, cnn_ages=None):
     """
     Build the schema room according to the given parameters
     :param num_adults: the number of adults in the room
@@ -63,6 +64,7 @@ def build_room(num_adults, num_children, cnn_ages=None):
                 room["CnnAge" + str(i)] = cnn_ages[i - 1]
             else:
                 room["CnnAge" + str(i + 1)] = 0
-
+    if room_token != "":
+        room["RoomToken"] = room_token
     rooms.append(room)
     return rooms

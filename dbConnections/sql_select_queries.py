@@ -1,4 +1,5 @@
 import numpy as np
+from moduls import logger
 from dbConnections import sql_db_connection as connection
 
 
@@ -7,6 +8,7 @@ def select_segment_id_of_hotel(hotel_id):
     return connection.exec_stored_procedures(procedure, hotel_id)
 
 
+@logger.info_log("Starting to get the hotels names from db")
 def select_hotels_name():
     """
     Retrieves a list of hotel names from the database.
@@ -31,14 +33,19 @@ def select_search_setting():
 
 
 def select_room_prices_by_segment_id(seg_id):
+    """
+    exec a stored procedure to retrieve the prices of all rooms in the given segment
+    """
     procedure_name = 'dbo.selectRoomsPricesById'
     return connection.exec_stored_procedures(procedure_name, seg_id)
 
 
 def select_statistical_information_by_id(segment_id, year, month):
+    """
+    exec a stored procedure to retrieve statistical information about a specific city by id, year and month from the database
+    """
     procedure_name = 'dbo.selectStatisticalInformationById'
     values = (segment_id, year, month)
-    print(values)
     return connection.exec_stored_procedures(procedure_name, values)
 
 
@@ -57,7 +64,6 @@ def select_data_of_opportunities(ids):
         np_ids = np.array(ids)
         np_ids_split_array = np.array_split(np_ids, 10)
         for np_ids in np_ids_split_array:
-
             db_data = connection.exec_query_select_rooms(list(np_ids))
 
             rooms_data.extend(db_data)
@@ -95,6 +101,9 @@ def select_room_price_by_id(ids):
 
 
 def select_hotel_room_class(hotel_id):
+    """
+    Select for hotel his room classes from the database
+    """
     procedure_name = "dbo.selectHotelsRoomsClasses"
     return connection.exec_stored_procedures(procedure_name, hotel_id)
 
@@ -125,3 +134,20 @@ def select_statistically_information_by_month(month_number):
         return connection.exec_views(view_name)
     else:
         raise ValueError("Month number is not in the range")
+
+
+def get_orders():
+    """
+        select all the orders from the orders table
+        :return:the orders data
+    """
+    orders_procedure = "dbo.sp_get_orders"
+    orders = []
+    for row in connection.exec_stored_procedures(orders_procedure, ''):
+        orders.append({'row': row})
+        print('row:', row)
+    results = dict()
+    apply_func = lambda x: results.update(
+        {len(x): [x]} if len(x) not in results.keys() else {len(x): results[len(x)] + [x]})
+    [apply_func(ele) for ele in orders]
+    return orders

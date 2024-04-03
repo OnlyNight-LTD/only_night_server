@@ -2,7 +2,7 @@ from itertools import groupby
 from datetime import datetime
 from dbConnections import sql_select_queries
 from moduls.algorithm import opportunitiesFinder
-from moduls.algorithm import statisticall_information as inflation
+from moduls.algorithm import statisticall_information as info
 
 
 def get_opportunities_response():
@@ -306,11 +306,15 @@ def calculate_profit(segment, room):
     """
     check_in = room.get("CheckIn")
     date = datetime.strptime(check_in, "%Y-%m-%d %H:%M:%S")
-    data_for_month = inflation.get_statistically_information_for_segment(segment, date.month, date.year - 1)
-    adr = inflation.get_adr_for_month(data_for_month)
+
+    data_for_month = info.get_statistically_information_for_segment(segment, date.month, date.year - 1)
+
+    if len(data_for_month) == 0:
+        data_for_month = info.get_statistically_information_for_segment(segment, date.month, date.year - 2)
+
+    adr = info.get_adr_for_month(data_for_month)
     profit = round(adr - room.get("Price"), 2)
-    if profit > 0:
-        room["Profit"] = profit
-    else:
-        room["Profit"] = 0
+
+    room["Profit"] = profit if profit > 0 else 0
+
     return room

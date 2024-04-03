@@ -1,6 +1,6 @@
 import pyodbc
 
-server = "ONLYNIGHT\SQLEXPRESS"
+server = ".\SQLEXPRESS"
 database = "OnlyNight"
 
 conn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};\
@@ -21,7 +21,6 @@ def exec_stored_procedures(name, values):
     sql = f"EXEC {name} {values}"
     sql = sql.replace("(", "")
     sql = sql.replace(")", "")
-    print(sql)
     row_id = cursor.execute(sql).fetchall()
     if isinstance(row_id, list) and len(row_id) > 0:
         row_id = row_id
@@ -59,19 +58,20 @@ def exec_query_select_rooms(ids):
     :param ids: A list of hotel IDs to select data for
     :return:  The data retrieved from the database based on the specified IDs
     """
-    string_ids = str(ids).replace("[", "").replace("]", "")
-    sql = f"""SELECT 
-              rooms.ID, rooms.Hotel_id, rooms.Price, rooms.Description, 
-              rooms.Sys_code, rooms.Check_in, rooms.Check_out, rooms.Nights, 
-              rooms.BToken, rooms.Limit_date,rooms.Remarks,
-              metadata.Code, metadata.Description
-              FROM rooms 
-             LEFT JOIN metadata ON metadata.Room_ID = rooms.ID
-             WHERE rooms.ID IN ({string_ids})"""
-    data = cursor.execute(sql).fetchall()
+    if len(ids) > 0:
+        string_ids = str(ids).replace("[", "").replace("]", "")
+        sql = f"""SELECT 
+                  rooms.ID, rooms.Hotel_id, rooms.Price, rooms.Description, 
+                  rooms.Sys_code, rooms.Check_in, rooms.Check_out, rooms.Nights, 
+                  rooms.BToken, rooms.Limit_date,rooms.Remarks,
+                  metadata.Code, metadata.Description
+                  FROM rooms 
+                 LEFT JOIN metadata ON metadata.Room_ID = rooms.ID
+                 WHERE rooms.ID IN ({string_ids})"""
+        data = cursor.execute(sql).fetchall()
 
-    if data:
-        return data
+        if data:
+            return data
     return []
 
 

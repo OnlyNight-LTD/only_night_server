@@ -73,7 +73,7 @@ def grouped_hotel_class_by_date(hotel_classes):
     """Group hotel classes by check in date"""
     grouped_hotel_classes = []
 
-    for k, g in itertools.groupby(hotel_classes, lambda x: x[3]):
+    for k, g in itertools.groupby(hotel_classes, lambda x: x[3]):  # x[3] = check in data
         grouped_hotel_classes.append({"Date": k, "Values": [{"RoomClass": item[1], "Price": item[2]} for item in g]})
 
     return grouped_hotel_classes
@@ -89,27 +89,37 @@ def short_info_by_month(info):
     return shorted_info
 
 
-def get_history_prices(hotel_id):
-    """Get hotel monthly prices for last year"""
+def get_history_prices_per_year(year, hotel_id):
+    """Get hotel monthly prices for a given year"""
     info = []
-    year = datetime.now().year - 1
+
     segment_id = sql_select_queries.select_segment_id_of_hotel(hotel_id)
 
     for month in range(1, 13):
         res = sql_select_queries.select_statistical_information_by_id(segment_id[0][0],
                                                                       year, month)
-        print(res)
-        if not res:
-            res = sql_select_queries.select_statistical_information_by_id(segment_id[0][0],
-                                                                          year - 1, month)
-        print(res)
+
+        # if not res:
+        #     res = sql_select_queries.select_statistical_information_by_id(segment_id[0][0],
+        #                                                                   year - 1, month)
+
         info += res
     return short_info_by_month(info)
+
+
+def get_history_prices(start_year, num_years_back, hotel_id):
+    history_prices = []
+
+    for year in range(num_years_back + 1):
+        history_prices.append({"Year": start_year, "Values": get_history_prices_per_year(start_year, hotel_id)})
+        start_year -= 1
+    return history_prices
 
 
 def get_hotel_room_classes(hotel_id):
     """Get hotel room classes for a specific hotel."""
     hotel_classes = get_room_classes_for_hotel(hotel_id)
     current_price_hotel = grouped_hotel_class_by_date(hotel_classes)
-    history_price_hotel = get_history_prices(hotel_id)
+    # history_price_hotel = get_history_prices_per_year(2023, hotel_id)
+    history_price_hotel = get_history_prices(2023, 1, hotel_id)
     return {"CurrentPriceHotel": current_price_hotel, "HistoryPriceHotel": history_price_hotel}

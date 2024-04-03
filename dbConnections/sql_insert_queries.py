@@ -4,7 +4,7 @@ from dbConnections import sql_db_connection as connection
 def inset_hotel_data(hotel_data):
     """
     Inset hotel data to database
-    :param hotel_data: the data to inset
+    :param hotel_data: the data to insert
     :return: the new row id
     """
     insert_address = "dbo.insertAddress"
@@ -79,18 +79,27 @@ def insert_search_setting(stars, search_key):
 
 
 def insert_room_class(hotel_id, room_class, price, date):
+    """
+    Exec a stored a procedure that inserts a room class into the database
+    """
     procedure = "dbo.insertNewRoomClass"
     room_class_values = (hotel_id, room_class, price, date)
     connection.exec_stored_procedures(procedure, room_class_values)
 
 
 def update_room_class_prices(hotel_id, price):
+    """
+    Exec a stored procedure that updates the room class price if the new price is cheaper than the old price
+    """
     procedure = "dbo.updateRoomClassPrice"
     values = (hotel_id, price)
     connection.exec_stored_procedures(procedure, values)
 
 
-
-
-
+def insert_reservation(reservation_info):
+    print('in insert_reservation')
+    insert_reservation_procedure = '[dbo].[sp_add_reservation]'
+    result = connection.exec_stored_procedures(insert_reservation_procedure, reservation_info)[0]
+    result = int(result[0])
+    return result
 

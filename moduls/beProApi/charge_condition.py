@@ -2,16 +2,19 @@ import requests
 import datetime
 import json
 from datetime import datetime
+from moduls.beProApi import bepro_definitions as definition
 
 
 def charge_condition_request(supplier_code, supplier_city_code, check_in, check_out, nights, item_code, room_token):
+    print('in charge_condition_request', supplier_code, supplier_city_code)
     url = "https://pub_srv.beprotravel.net/BePro/api/Hotels/ChargeCondition"
 
     payload = json.dumps({
         "Query": {
+            "CompanyId": definition.company_id,
             "Command": 2,
             "LanguageCode": "en",
-            "CurrencyCode": "EUR",
+            "CurrencyCode": "USD",
             "SysSuppCode": supplier_code,
             "SuppCityCode": supplier_city_code,
             "CheckIn": check_in,
@@ -38,7 +41,7 @@ def charge_condition_request(supplier_code, supplier_city_code, check_in, check_
                 }
             ],
             "ResultMode": "Json",
-            "MaxMilliSecondsTimeToWait": 60000
+            "MaxMilliSecondsTimeToWait": 100000
         },
         "Compress": True,
         "LanguageCode": "en"
@@ -46,30 +49,33 @@ def charge_condition_request(supplier_code, supplier_city_code, check_in, check_
     headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'Authorization': 'Basic Qz0xNTA6RD04OkI9NTI0OlU9NzIxNDpQPTU0QjM5QTU='
-    }
+        'Authorization': 'Basic Qz0xMzQ6RD02OkI9MjU4OlU9Njg1OlA9MzBDMUQ=',
+        'BEPROCOMPANY': '134',
 
-    response = requests.request("POST", url, headers=headers, data=payload)
+    }
+    print('payload of charge_condition: ', payload)
+    response = requests.request("POST", url, headers=headers, data=payload, verify=False)
 
     return response.json()
 
 
 def extract_data_from_room_token(room_token):
+    print('in extract_data_from_room_token', room_token)
     room_token_data = room_token.split("‡")
-    supplier_city_code = room_token_data[1]
-    supplier_code = room_token_data[2]
-    item_code = room_token_data[3]
-    check_in = room_token_data[4]
-    nights = room_token_data[5]
-    check_out = calculate_check_out(check_in, nights)
-    return supplier_city_code, supplier_code, item_code, check_in, check_out, nights
+    supplier_city_code = room_token_data[2]
+    supplier_code = room_token_data[3]
+    item_code = room_token_data[4]
+    check_in = room_token_data[5]
+    nights = room_token_data[6]
+
+    return supplier_city_code, supplier_code, item_code, check_in, nights
 
 
 def calculate_check_out(check_in, nights):
-    check_in = datetime.strptime(check_in, "%Y-%m-%d %H:%M:%S")
+    print('in calculate_check_out of charge condition', check_in, nights, type(check_in))
+    check_in = datetime.strptime(check_in, "%Y-%m-%d")# %H:%M:%S  "%Y-%m-%d
     return check_in + datetime.timedelta(days=nights)
 
 
 def extract_infoGrossRate(charge_condition_response):
     return charge_condition_response.get("cancellationPolicy").get("infoGrossRate")
-

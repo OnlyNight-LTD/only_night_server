@@ -13,6 +13,88 @@ from moduls.beProApi import hotels_data_handler as hotel_handler
 last_index = './/ItemsLinkAsyncResults'
 
 
+# def search_post_request(search_key, country_code, geo_code, check_in, nights, rooms, stars, radius, hotel_code,
+#                         suppliers_search):
+
+
+def search_post_request_for_reservation(search_key, country_code, geo_code, check_in, nights, rooms, stars, radius, hotel_code, suppliers_search):
+
+
+    """
+    This function will send a post request to bePro api and search for hotels by all parameters
+    :param radius: the radius of distance to search
+    :param search_key: the city and country to search
+    :param country_code: the country code
+    :param geo_code: the geographic code for the city
+    :param check_in: the date to begin searching
+    :param nights: the number of nights to search
+    :param rooms: the details of the room to search
+    :param stars: the number of the hotels starts
+    :return: the unique key of the response
+    """
+    # all the data here is from be pro documentation
+    post_search_url = "https://pub_srv.beprotravel.net/BePro/api/Hotels/SearchQuery"
+    payload = json.dumps({
+        "Query": {
+            "CompantId": definition.company_id,
+            "SearchResponceType": 7,
+            "SearchType": 0,
+            "GeoSearch": {
+                "Radius": radius,
+                "HavePIP": False,
+                "SearchKey": {
+                    "Name": search_key
+                },
+                "CountryCode": {
+                    "Code": country_code
+                },
+                "GeoCode": geo_code,
+                "SearchGeoType": 2,
+                "AltSeacrhKey": None
+            },
+            "CheckIn": check_in,
+            "Nights": nights,
+            "Rooms": rooms,
+            "SuppliersSearch": suppliers_search,
+            "Item": {
+                "Code": hotel_code,
+            },
+            "StarRateCode": stars,
+            "CurrencyCode": "USD",
+            "RetFilterFromResults": True,
+            "RemoveSmallRooms": True,
+            "ClientType": "B2C",
+            "SearchTypeId": 138,
+            "Command": 0,
+            "LanguageCode": "en",
+            "CompanyId": definition.company_id,
+            "DepartmentId": definition.department_id,
+            "BranchId": definition.branch_id,
+            "UserCode": definition.user_code,
+            "MaxMilliSecondsTimeToWait": definition.max_milli_seconds_time_to_wait
+        },
+        "Header": {
+            "CompanyId": definition.company_id,
+            "DepartmentId": definition.department_id,
+            "BranchId": definition.branch_id,
+            "UserCode": definition.user_code,
+            "UserId": definition.user_id,
+            "UserPWD": definition.user_pwd
+        }
+    })
+
+    headers = {
+        'Accept': 'application/json',
+        'BEPROCOMPANY': '134',
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic Qz0xMzQ6RD02OkI9MjU4OlU9Njg1OlA9MzBDMUQ='
+    }
+    print('payload of search one for reservation:', payload)
+
+    response = requests.request("POST", post_search_url, headers=headers, data=payload, verify=False)
+    return get_the_unique_key(response.json())
+
+
 def search_post_request(search_key, country_code, geo_code, check_in, nights, rooms, stars, radius):
     """
     This function will send a post request to bePro api and search for hotels by all parameters
@@ -30,6 +112,7 @@ def search_post_request(search_key, country_code, geo_code, check_in, nights, ro
     post_search_url = "https://pub_srv.beprotravel.net/BePro/api/Hotels/SearchQuery"
     payload = json.dumps({
         "Query": {
+            "CompantId": definition.company_id,
             "SearchResponceType": 7,
             "SearchType": 0,
             "GeoSearch": {
@@ -78,7 +161,11 @@ def search_post_request(search_key, country_code, geo_code, check_in, nights, ro
         'Content-Type': 'application/json',
         'Authorization': 'Basic Qz0xMzQ6RD02OkI9MjU4OlU9Njg1OlA9MzBDMUQ='
     }
+
+    print('payload of search one not for reservation:', payload)
+
     response = requests.request("POST", post_search_url, headers=headers, data=payload, verify=False)
+    print(response.status_code)
     return get_the_unique_key(response.json())
 
 
@@ -115,9 +202,10 @@ def get_hotels_request(unique_key):
         'BEPROCOMPANY': '134',
         'Authorization': 'Basic Qz0xMzQ6RD02OkI9MjU4OlU9Njg1OlA9MzBDMUQ='
     }
-    time_sleep = 12
+    time_sleep = 14
     time.sleep(time_sleep)
     response = requests.request("GET", get_hotels_details_url, headers=headers, verify=False)
+    print('response.text:', response.text)
     return response.text
 
 
@@ -160,6 +248,7 @@ def get_the_unique_key(json_response):
     :param json_response: the searching response from the api
     :return: the unique key field
     """
+    print('unique_key:', json_response.get('results').get('sysResinfo').get('uniqueKey'))
     return json_response.get('results').get('sysResinfo').get('uniqueKey')
 
 

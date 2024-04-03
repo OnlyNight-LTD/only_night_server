@@ -10,11 +10,9 @@ def search_opportunities(segment):
     :param segment: The segment to search for opportunities
     :return: A list of opportunities ids
     """
-
     opportunities = []
     arbitrage = 50
     rooms = statisticall_information.get_rooms_prices(segment.get("Id"))
-    print("rooms", len(rooms))
     shorted_rooms_by_month = statisticall_information.short_rooms_by_month(rooms)
     for i in range(1, 13):
         history_data = statisticall_information.get_statistically_information_for_segment(
